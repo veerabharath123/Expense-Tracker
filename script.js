@@ -4,8 +4,9 @@ import { ExpenseResult, Expense } from './models.js'; // Import ExpenseResult
 
 //const _context = new LocalDbContext();
 const _context = new SuperDbContext();
+await _context.Category.loadData()
 
-const categories = await _context.Category.where(x => x.active);
+const categories = await _context.Category.where(x => x.active).toList();
 //console.log(await _scontext.Category.getAll())
 
 function loadCategories() {

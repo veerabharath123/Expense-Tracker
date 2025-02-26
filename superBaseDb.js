@@ -18,10 +18,12 @@ class DbSet {
 
         const { data, error } = await supabase.from(this.tableName).select('*');
         if (error) throw error;
+
+        this.data = data.map(item => Object.assign(new this.modelType(), item));
         return data.map(item => Object.assign(new this.modelType(), item));
     }
-    async toList(){
-        return await this.loadData();
+    toList(){
+        return this.data;
     }
     async save(){
         if(this.transactions.length === 0) return null;
@@ -30,13 +32,13 @@ class DbSet {
         this.transactions = []
     }
 
+    // async add(item) {
+    //     this.transactions.push({
+    //         item,
+    //         type: 'insert'
+    //     });
+    // }
     async add(item) {
-        this.transactions.push({
-            item,
-            type: 'insert'
-        });
-    }
-    async addToDatabase(item) {
         const { data, error } = await supabase.from(this.tableName).insert([item]).select();
         if (error) throw error;
         return data;
@@ -55,10 +57,9 @@ class DbSet {
         return data ? Object.assign(new this.modelType(), data) : null;
     }
 
-    async where(column, value) {
-        const { data, error } = await supabase.from(this.tableName).select('*').eq(column, value);
-        if (error) throw error;
-        return new DbSet(this.tableName, this.modelType, data);
+    where(predicate) {
+        const data = this.data;
+        return new DbSet(this.tableName, this.modelType, data.filter(predicate));
     }
 
     async orderBy(selector) {
